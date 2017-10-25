@@ -1,0 +1,108 @@
+                                ;;  1. The iNes Header
+                                	
+      4E 45 53 1A                   .db "NES", $1a	; iNes identifier
+      01                        	.db $01			; number of PRG-Rom blocks the game will have
+      01                        	.db $01			; number of CHR-Rom blocks the game will have
+      00 01                     	.db $00, $01	; control bytes    
+      00 00 00 00 00 00 00 00   	.db $00, $00, $00, $00, $00, $00, $00, $00
+                                	
+                                ;; 2. Constants and Variables
+                                	
+                                    .enum $0000
+00000                               .ende
+                                
+                                ;; 3. Set the code starting point
+                                	
+                                    .org $C000		; Code starting point at address $C000
+0C000                           
+0C000                           ;; 4. The RESET routine, fires on game launch and reset button being pressed
+0C000                           RESET:
+0C000 78                        	SEI				; Ignore interupts for the routine		
+0C001                           
+0C001 A9 00                     	LDA: #$00		; Load 0 into the accumulator
+0C003 8D 00 20                      STA: $2000		; Disables the NMI
+0C006 8D 01 20                      STA: $2001		; Disables rendering
+0C009                               
+0C009 8D 10 40                      STA: $4010		
+0C00C 8D 15 40                      STA: $4015
+0C00F A9 40                         LDA: #$40		; Loads hex value 40 which is decimal 64
+0C011                               
+0C011 8D 17 40                      STA: $4017
+0C014                               
+0C014 D8                            CLD				; Disables decimal code
+0C015 A2 FF                         LDX #$FF		; Load value 255
+0C017 9A                            TXS				; Initialises the stack
+0C018                               
+0C018 2C 02 20                      bit $2002
+0C01B                           
+0C01B                           vBlankWait1:
+0C01B 2C 02 20                  	bit $2002
+0C01E 10 FB                     	BPL vBlankWait1
+0C020                               
+0C020 A9 00                         LDA #$00		; loads zero into the accumulator
+0C022 A2 00                     	LDX #$00		; loads zero into x
+0C024                           ClearMemoryLoop:
+0C024 95 00                     	STA $0000,x		; Store accumulator (0) into address $0000 + x 
+0C026 9D 00 01                  	STA $0100,x		; Store accumulator (0) into address $0100 + x
+0C029 9D 00 02                  	STA $0200,x		; Store accumulator (0) into address $0200 + x 
+0C02C 9D 00 03                  	STA $0300,x		; Store accumulator (0) into address $0300 + x 
+0C02F 9D 00 04                  	STA $0400,x		; Store accumulator (0) into address $0400 + x 
+0C032 9D 00 05                  	STA $0500,x		; Store accumulator (0) into address $0500 + x 
+0C035 9D 00 06                      STA $0600,x		; Store accumulator (0) into address $0600 + x 
+0C038 9D 00 07                      STA $0700,x		; Store accumulator (0) into address $0700 + x 
+0C03B E8                        	INX				; x goes up by one, so all of those +x's at the end that were zero the first time through are increased.
+0C03C D0 E6                     	BNE ClearMemoryLoop
+0C03E                               
+0C03E                           vBlankWait2:
+0C03E                           
+0C03E 2C 02 20                  	bit $2002
+0C041 10 FB                     	BPL vBlankWait2
+0C043                               
+0C043 A9 90                         LDA #%10010000	; Loads this binary number to accumulator
+0C045 8D 00 20                      STA $2000		; Storing it here turns back NMI on
+0C048                           
+0C048 A9 1E                     	LDA #%00011110	; Loads this binary number to accumulator
+0C04A                           	
+0C04A 8D 01 20                      STA $2001		; enables rendering
+0C04D                               
+0C04D 4C 6F C0                     	JMP MainGameLoop
+0C050                           
+0C050                           ;; 5. The NMI
+0C050                           NMI:
+0C050 48                        	PHA
+0C051 8A                            TXA
+0C052 48                            PHA
+0C053 98                            TYA
+0C054 48                            PHA
+0C055                               
+0C055 A9 00                         LDA #$00
+0C057 8D 03 20                      STA $2003
+0C05A A9 02                         LDA #$02
+0C05C 8D 14 40                      STA $4014
+0C05F                               
+0C05F A9 90                         LDA #%10010000
+0C061 8D 00 20                      STA $2000
+0C064 A9 1E                         LDA #%00011110
+0C066 8D 01 20                      STA $2001
+0C069                               
+0C069 68                            PLA
+0C06A A8                            TAY
+0C06B 68                            PLA
+0C06C AA                            TAX
+0C06D 68                            PLA
+0C06E 40                            RTI
+0C06F                           
+0C06F                           ;; 6. The Main Game Loop
+0C06F                           MainGameLoop:
+0C06F 4C 6F C0                  	JMP MainGameLoop
+0C072                           
+0C072                           ;; 7. Sub Routines
+0C072                           
+0C072                           ;; 8. Includes and data tables
+0C072                           
+0C072                           ;; 9. The Vectors
+0C072 00 00 00 00 00 00 00 00.. 	.org $fffa
+0FFFA 50 C0                         .dw NMI
+0FFFC 00 C0                         .dw RESET
+0FFFE 00 00                         .dw 00
+10000                           
