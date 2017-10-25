@@ -1,7 +1,7 @@
 ;;  1. The iNes Header
     .db "NES", $1a	; iNes identifier
-    .db $01			; number of PRG-Rom blocks the game will have
-    .db $01			; number of CHR-Rom blocks the game will have
+    .db $01		; number of PRG-Rom blocks the game will have
+    .db $01		; number of CHR-Rom blocks the game will have
     .db $00, $01	; control bytes    
     .db $00, $00, $00, $00, $00, $00, $00, $00
 	
@@ -17,7 +17,7 @@
 ;; 4. The RESET routine, fires on game launch and reset button being pressed
 
 RESET:
-    SEI				; Ignore interupts for the routine		
+    SEI			; Ignore interupts for the routine		
     
     LDA: #$00		; Load 0 into the accumulator
     STA: $2000		; Disables the NMI
@@ -29,9 +29,9 @@ RESET:
     
     STA: $4017
     
-    CLD				; Disables decimal code
+    CLD			; Disables decimal code
     LDX #$FF		; Load value 255
-    TXS				; Initialises the stack
+    TXS			; Initialises the stack
     
     bit $2002
 
@@ -51,7 +51,7 @@ ClearMemoryLoop:
     STA $0500,x		; Store accumulator (0) into address $0500 + x 
     STA $0600,x		; Store accumulator (0) into address $0600 + x 
     STA $0700,x		; Store accumulator (0) into address $0700 + x 
-    INX				; x goes up by one, so all of those +x's at the end that were zero the first time through are increased.
+    INX			; x goes up by one, so all of those +x's at the end that were zero the first time through are increased.
     BNE ClearMemoryLoop
     
 vBlankWait2:
